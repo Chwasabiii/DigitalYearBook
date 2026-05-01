@@ -1,43 +1,60 @@
 // =============================================
-//  router.js — Simple SPA Router
+// router.js — SINGLE SOURCE OF TRUTH
 // =============================================
 
-const PAGES = {
-  landing: window.LandingPage,
-  login:   window.LoginPage,
-  signup:  window.SignupPage,
-  home:    window.HomePage,
-};
-
 const Router = {
-  current: null,
-
   init() {
-    const app = document.getElementById('app');
-    // Render all pages into the DOM
-    app.innerHTML =
-      LandingPage.render() +
-      LoginPage.render() +
-      SignupPage.render() +
-      HomePage.render();
-
-    // Start on landing
     this.go('landing');
   },
 
   go(page) {
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+    const app = document.getElementById('app');
+    if (!app) return;
 
-    // Show target page
-    const target = document.getElementById(`page-${page}`);
-    if (target) {
-      target.classList.add('active');
-      this.current = page;
+    let html = '';
+
+    // Update body class for theme
+    document.body.classList.remove('theme-dark');
+    if (page === 'organizations') {
+      document.body.classList.add('theme-dark');
     }
-  },
+
+    switch (page) {
+      case 'landing':
+        html = LandingPage.render();
+        break;
+
+      case 'login':
+        html = LoginPage.render();
+        break;
+
+      case 'signup':
+        html = SignupPage.render();
+        break;
+
+      case 'home':
+        html = HomePage.render();
+        break;
+
+      case 'organizations':
+        html = OrganizationsPage.render();
+        break;
+
+      default:
+        html = `<div style="padding:20px;">Page not found</div>`;
+    }
+
+    app.innerHTML = html;
+  }
 };
 
-// Boot
 window.Router = Router;
-document.addEventListener('DOMContentLoaded', () => Router.init());
+
+document.addEventListener('DOMContentLoaded', () => {
+  Router.init();
+});
+
+// helper for onclick usage
+function navigate(page) {
+  Router.go(page);
+}

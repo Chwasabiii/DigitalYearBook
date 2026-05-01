@@ -3,8 +3,9 @@
 // =============================================
 
 function renderLogin() {
+  console.log('Rendering login page');
   return `
-    <div id="page-login" class="page">
+    <div id="page-login" class="page active">
       <!-- Navbar -->
       <nav class="navbar">
         <span class="navbar-brand" onclick="Router.go('landing'); return false;" style="cursor:pointer;">Login</span>

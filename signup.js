@@ -4,7 +4,7 @@
 
 function renderSignup() {
   return `
-    <div id="page-signup" class="page">
+    <div id="page-signup" class="page active">
       <!-- Navbar -->
       <nav class="navbar">
         <span class="navbar-brand" onclick="Router.go('landing'); return false;" style="cursor:pointer;">Sign Up</span>

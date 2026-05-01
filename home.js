@@ -2,6 +2,16 @@
 //  home.js — Main Dashboard / Home Page
 // =============================================
 
+// Render navigation tabs for the navbar
+function renderNavTabs() {
+  return NAV_TABS.map(tab => `
+    <a href="#" data-tab="${tab.id}" class="${tab.active ? 'active' : ''}"
+      onclick="HomePage.setTab('${tab.id}'); return false;">
+      ${tab.label}
+    </a>
+  `).join('');
+}
+
 // Student data — replace avatar paths with your images
 const STUDENTS = [
   {
@@ -77,7 +87,7 @@ const NAV_TABS = [
   { label: 'Home',           id: 'home',          active: true },
   { label: 'Profile',        id: 'profile',       active: false },
   { label: 'My Group',       id: 'mygroup',       active: false },
-  { label: 'Organizations',  id: 'organizations', active: false },
+  { label: 'Organizations',  id: 'organizations', active: true },
   { label: 'Emerging Tech',  id: 'emerging',      active: false },
   { label: 'Memories',       id: 'memories',      active: false },
   { label: 'Gallery',        id: 'gallery',       active: false },
@@ -114,25 +124,40 @@ function renderStudentCard(student) {
   `;
 }
 
-function renderNavTabs() {
-  return NAV_TABS.map(tab => `
-    <li class="navbar-links-item">
-      <a href="#"
-        class="${tab.active ? 'active' : ''}"
-        data-tab="${tab.id}"
-        onclick="HomePage.setTab('${tab.id}'); return false;">
-        ${tab.label}
-      </a>
-    </li>
-  `).join('');
+function setTab(tabId) {
+  NAV_TABS.forEach(t => t.active = (t.id === tabId));
+  const tabEls = document.querySelectorAll('#home-nav-tabs a');
+  tabEls.forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tabId);
+  });
+
+  const app = document.getElementById('app');
+
+  // 🔥 SWITCH PAGES HERE
+  if (tabId === 'home') {
+    app.innerHTML = HomePage.render();
+  }
+
+  else if (tabId === 'organizations') {
+    app.innerHTML = OrganizationsPage.render();
+  }
+
+  else {
+    app.innerHTML = `
+      <div style="padding:20px;">
+        <h2>${tabId}</h2>
+        <p>Page not implemented yet.</p>
+      </div>
+    `;
+  }
 }
 
 function renderHome() {
   return `
-    <div id="page-home" class="page home-page">
+    <div id="page-home" class="page home-page active">
       <!-- Navbar with tabs -->
       <nav class="navbar">
-        <div class="hamburger" onclick="HomePage.toggleMenu()">
+        <div class="hamburger" onclick="navigate('home')">
           <span></span><span></span><span></span>
         </div>
         <ul class="navbar-links" id="home-nav-tabs">
@@ -177,14 +202,6 @@ function renderHome() {
       </div>
     </div>
   `;
-}
-
-function setTab(tabId) {
-  NAV_TABS.forEach(t => t.active = (t.id === tabId));
-  const tabEls = document.querySelectorAll('#home-nav-tabs a');
-  tabEls.forEach(el => {
-    el.classList.toggle('active', el.dataset.tab === tabId);
-  });
 }
 
 function filterStudents(query) {

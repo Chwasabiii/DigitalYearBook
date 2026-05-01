@@ -4,7 +4,7 @@
 
 function renderLanding() {
   return `
-    <div id="page-landing" class="page">
+    <div id="page-landing" class="page active">
       <!-- Navbar -->
       <nav class="navbar">
         <span class="navbar-brand">Landing Airplane</span>
