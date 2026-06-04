@@ -165,19 +165,76 @@ const INFO_PAGES = {
     intro: 'The moments that made the school year feel real: stressful, funny, tiring, and worth remembering.',
     cards: [
       { title: 'Project Defense', label: 'Project', mood: 'Prototype showcase', image: 'images/project-defense.jpg', imageAlt: 'Students presenting a project display with a laptop and a store model', text: 'A project showcase moment with the team, prototype model, and system demo ready on the table.' },
-      { title: 'BITS Activities', label: 'Community', mood: 'Shared momentum', text: 'Workshops and events that made technology feel like a community, not just a subject.' },
-      { title: 'Class Photo Day', label: 'Snapshot', mood: 'Everyone together', text: 'The day everyone paused long enough to become part of the same frame.' },
-      { title: 'Quiet Wins', label: 'Everyday', mood: 'Small victories', text: 'Fixed bugs, submitted files, passed activities, and classmates who helped without making noise about it.' },
+      { title: 'BITS Activities', label: 'Community', mood: 'Shared momentum', image: 'images/Group2.jpg', imageAlt: 'Students celebrating after a BITS workshop at night', text: 'Workshops and events that made technology feel like a community, not just a subject.' },
+      { title: 'Class Photo Day', label: 'Snapshot', mood: 'Everyone together', image: 'images/group4.jpg', imageAlt: 'Class photo taken inside the campus building', text: 'The day everyone paused long enough to become part of the same frame.' },
+      { title: 'Quiet Wins', label: 'Everyday', mood: 'Small victories', image: 'images/memories.jpg', imageAlt: 'A quiet classroom moment with students working on computers', text: 'Fixed bugs, submitted files, passed activities, and classmates who helped without making noise about it.' },
     ],
   },
   gallery: {
     kicker: 'Class Gallery',
     title: 'Gallery',
-    intro: 'A simple gallery wall for future photos. Add images later and this page can become the visual heart of the yearbook.',
+    intro: 'A collection of moments from the year: team outings, class gatherings, projects, and memories that shaped the batch.',
     cards: [
       { title: 'Portraits', label: 'Profiles', slots: 12, text: 'Individual student photos for each profile and card.' },
-      { title: 'Group Photos', label: 'Class', slots: 6, text: 'Class pictures, organization events, and team memories.' },
-      { title: 'Project Moments', label: 'Work', slots: 8, text: 'Screenshots, prototypes, booths, defenses, and behind-the-scenes work.' },
+      {
+        title: 'Group Photos',
+        label: 'Class',
+        slots: 6,
+        text: 'Class pictures, organization events, and team memories.',
+        photos: [
+          {
+            src: 'images/Group1.jpg',
+            alt: 'Group photo outdoors with students in a grassy area',
+            caption: 'Group 1',
+          },
+          {
+            src: 'images/Group2.jpg',
+            alt: 'Night group photo with students at a sports facility',
+            caption: 'Group 2',
+          },
+          {
+            src: 'images/group3.jpg',
+            alt: 'Street candid group photo with students posing together',
+            caption: 'Group 3',
+          },
+          {
+            src: 'images/group4.jpg',
+            alt: 'Indoor class group photo with students in a hallway',
+            caption: 'Group 4',
+          },
+        ],
+      },
+      {
+        title: 'Project Moments',
+        label: 'Work',
+        slots: 8,
+        text: 'Screenshots, prototypes, booths, defenses, and behind-the-scenes work.',
+        photos: [
+          {
+            src: 'images/project-defense.jpg',
+            alt: 'Students presenting a project display with a laptop and a store model',
+            caption: 'Project Defense',
+          },
+        ],
+      },
+      {
+        title: 'Memories',
+        label: 'Memories',
+        slots: 4,
+        text: 'Favorite memories from campus and the year together.',
+        photos: [
+          {
+            src: 'images/memories.jpg',
+            alt: 'A memory photo from the yearbook collection',
+            caption: 'Memories',
+          },
+          {
+            src: 'images/memories2.jpg',
+            alt: 'Another memory photo from the yearbook collection',
+            caption: 'Memories 2',
+          },
+        ],
+      },
     ],
   },
   about: {
@@ -549,16 +606,41 @@ function renderMemoriesPage(page) {
 }
 
 function renderGalleryPage(page) {
-  const galleryCards = page.cards.map((card, idx) => `
-    <article class="gallery-album-card" role="button" tabindex="0" onclick="showGalleryModal(${idx})" onkeydown="handleGalleryCardKey(event, ${idx})">
+  const cards = getGalleryCards();
+  const totalPhotos = cards.reduce((total, card) => total + (card.photos?.length || 0), 0);
+  const openSlots = cards.reduce((total, card) => total + Math.max(card.slots - (card.photos?.length || 0), 0), 0);
+  const galleryWallPhotos = cards.flatMap(card => card.photos || []).slice(0, 9);
+  const galleryCards = cards.map((card, idx) => {
+    const previewPhoto = card.photos?.[0]?.src || null;
+    return `
+    <article class="gallery-album-card ${card.photos?.length ? 'has-photo' : ''}" role="button" tabindex="0" onclick="showGalleryModal(${idx})" onkeydown="handleGalleryCardKey(event, ${idx})">
+      ${previewPhoto ? `<div class="gallery-album-photo"><img src="${previewPhoto}" alt="${card.title} preview"></div>` : ''}
       <div class="gallery-album-top">
         <span>${card.label}</span>
-        <strong>${String(card.slots).padStart(2, '0')}</strong>
+        <strong>${String(card.photos?.length || card.slots).padStart(2, '0')}</strong>
       </div>
       <h2>${card.title}</h2>
       <p>${card.text}</p>
       <div class="gallery-slot-strip" aria-hidden="true">
         ${Array.from({ length: 4 }).map((_, slotIndex) => `<span>${String(slotIndex + 1).padStart(2, '0')}</span>`).join('')}
+      </div>
+    </article>
+  `;
+  }).join('');
+  const portraitProfiles = STUDENTS.map(renderProfileCard).join('');
+  const memoryPage = INFO_PAGES.memories;
+  const memoryCards = memoryPage.cards.map((card, idx) => `
+    <article class="memory-card ${card.image ? 'has-photo' : ''}" role="button" tabindex="0" onclick="showMemoryModal(${idx})" onkeydown="handleMemoryCardKey(event, ${idx})">
+      ${card.image ? `<div class="memory-card-photo"><img src="${card.image}" alt="${card.imageAlt}"></div>` : ''}
+      <div class="memory-card-index">${String(idx + 1).padStart(2, '0')}</div>
+      <div class="card-body">
+        <span class="memory-card-label">${card.label}</span>
+        <h2>${card.title}</h2>
+        <p>${card.text}</p>
+        <div class="memory-card-footer">
+          <span>${card.mood}</span>
+          <span class="memory-card-action">Open memory</span>
+        </div>
       </div>
     </article>
   `).join('');
@@ -572,8 +654,8 @@ function renderGalleryPage(page) {
       </div>
       <aside class="gallery-board-panel">
         <span>Photo Intake</span>
-        <strong>0</strong>
-        <p>No photos added yet. The layout is ready for the images you will send later.</p>
+        <strong>${totalPhotos}</strong>
+        <p>${totalPhotos ? 'Project defense photo added. More gallery slots are ready for the next batch of images.' : 'No photos added yet. The layout is ready for the images you will send later.'}</p>
       </aside>
     </section>
 
@@ -583,25 +665,72 @@ function renderGalleryPage(page) {
         <span>Albums planned</span>
       </div>
       <div>
-        <strong>0</strong>
+        <strong>${totalPhotos}</strong>
         <span>Photos added</span>
       </div>
       <div>
-        <strong>${String(page.cards.reduce((total, card) => total + card.slots, 0)).padStart(2, '0')}</strong>
+        <strong>${String(openSlots).padStart(2, '0')}</strong>
         <span>Open slots</span>
       </div>
     </section>
 
-    <section class="gallery-empty-wall" aria-label="Empty photo slots">
-      ${Array.from({ length: 9 }).map((_, idx) => `
-        <button type="button" class="gallery-empty-slot" onclick="showGalleryModal(${idx % page.cards.length})">
-          <span>${String(idx + 1).padStart(2, '0')}</span>
-        </button>
-      `).join('')}
+    <section class="gallery-empty-wall" aria-label="Gallery wall">
+      ${galleryWallPhotos.map((photo, idx) => {
+        const cardIndex = page.cards.findIndex(card => card.photos?.some(p => p.src === photo.src));
+        const card = page.cards[cardIndex] || {};
+        const photoIndex = cardIndex >= 0 ? card.photos.findIndex(p => p.src === photo.src) : 0;
+        return `
+          <button type="button" class="gallery-empty-slot has-photo" onclick="showGalleryModal(${cardIndex}, ${photoIndex})">
+            <div class="gallery-card-inner">
+              <div class="gallery-card-face gallery-card-front">
+                <img src="${photo.src}" alt="${photo.alt}">
+                <span>${String(idx + 1).padStart(2, '0')}</span>
+              </div>
+              <div class="gallery-card-face gallery-card-back">
+                <div class="gallery-card-back-copy">
+                  <strong>${photo.caption || card.title || 'Gallery Image'}</strong>
+                  <p>${card.text || 'Hover to see more information about this photo.'}</p>
+                  <span>${card.label || 'Gallery'}</span>
+                </div>
+              </div>
+            </div>
+          </button>
+        `;
+      }).join('')}
     </section>
 
     <section class="gallery-album-grid">
       ${galleryCards}
+    </section>
+
+    <section class="gallery-portrait-profiles" aria-label="Student portrait profiles">
+      <div class="gallery-portrait-heading">
+        <div>
+          <p class="home-kicker">Portraits</p>
+          <h2>Student Profile Portraits</h2>
+          <p>Browse the students behind the portraits with profile cards linked directly to each student.</p>
+        </div>
+      </div>
+      <div class="profile-grid gallery-portrait-grid">
+        ${portraitProfiles}
+      </div>
+    </section>
+
+    <section class="gallery-memory-section" aria-label="Gallery memories">
+      <div class="gallery-memory-heading">
+        <div>
+          <p class="home-kicker">${memoryPage.kicker}</p>
+          <h2>${memoryPage.title}</h2>
+          <p>${memoryPage.intro}</p>
+        </div>
+        <div class="gallery-memory-count">
+          <strong>${String(memoryPage.cards.length).padStart(2, '0')}</strong>
+          <span>Stories</span>
+        </div>
+      </div>
+      <div class="memory-grid">
+        ${memoryCards}
+      </div>
     </section>
 
     <div class="gallery-modal" id="gallery-modal" aria-hidden="true" onclick="handleGalleryModalBackdrop(event)">
@@ -613,6 +742,10 @@ function renderGalleryPage(page) {
         </div>
         <h2 id="gallery-modal-title"></h2>
         <p id="gallery-modal-text"></p>
+        <div class="gallery-modal-photo" id="gallery-modal-photo-wrap" hidden>
+          <img id="gallery-modal-photo" src="" alt="">
+          <span id="gallery-modal-photo-caption"></span>
+        </div>
         <div class="gallery-modal-slots" aria-hidden="true">
           <span></span><span></span><span></span><span></span><span></span><span></span>
         </div>
@@ -620,6 +753,27 @@ function renderGalleryPage(page) {
           <button type="button" onclick="showAdjacentGallery(-1)" aria-label="Previous album">Previous</button>
           <span id="gallery-modal-progress">01 / 03</span>
           <button type="button" onclick="showAdjacentGallery(1)" aria-label="Next album">Next</button>
+        </footer>
+      </div>
+    </div>
+
+    <div class="memory-modal" id="memory-modal" aria-hidden="true" onclick="handleMemoryModalBackdrop(event)">
+      <div class="memory-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="memory-modal-title">
+        <button type="button" class="memory-modal-close" aria-label="Close" onclick="closeMemoryModal()">x</button>
+        <div class="memory-modal-topline">
+          <span id="memory-modal-number">01</span>
+          <span id="memory-modal-label">Memory Note</span>
+        </div>
+        <h2 id="memory-modal-title"></h2>
+        <span class="memory-modal-mood" id="memory-modal-mood"></span>
+        <div class="memory-modal-photo" id="memory-modal-photo-wrap">
+          <img id="memory-modal-photo" src="" alt="">
+        </div>
+        <p id="memory-modal-text"></p>
+        <footer class="memory-modal-footer">
+          <button type="button" onclick="showAdjacentMemory(-1)" aria-label="Previous memory">Previous</button>
+          <span id="memory-modal-progress">01 / ${String(memoryPage.cards.length).padStart(2, '0')}</span>
+          <button type="button" onclick="showAdjacentMemory(1)" aria-label="Next memory">Next</button>
         </footer>
       </div>
     </div>
@@ -795,7 +949,17 @@ function handleMemoryCardKey(event, index) {
 }
 
 function getGalleryCards() {
-  return INFO_PAGES.gallery.cards;
+  const portraitPhotos = STUDENTS.map(student => ({
+    src: student.avatar,
+    alt: student.name,
+    caption: student.name,
+  }));
+
+  return INFO_PAGES.gallery.cards.map(card =>
+    card.title === 'Portraits'
+      ? { ...card, photos: portraitPhotos }
+      : card
+  );
 }
 
 function showAdjacentGallery(direction) {
@@ -804,7 +968,7 @@ function showAdjacentGallery(direction) {
   showGalleryModal(nextIndex);
 }
 
-function showGalleryModal(index) {
+function showGalleryModal(index, photoIndex = 0) {
   const cards = getGalleryCards();
   const card = cards[index];
   const modal = document.querySelector('.gallery-theatre-page #gallery-modal') || document.getElementById('gallery-modal');
@@ -822,8 +986,32 @@ function showGalleryModal(index) {
   document.getElementById('gallery-modal-number').textContent = String(index + 1).padStart(2, '0');
   document.getElementById('gallery-modal-label').textContent = card.label;
   document.getElementById('gallery-modal-title').textContent = card.title;
-  document.getElementById('gallery-modal-text').textContent = `${card.text} ${card.slots} empty slots are ready for your photos.`;
+  const photoCount = card.photos?.length || 0;
+  const openSlotCount = Math.max(card.slots - photoCount, 0);
+  document.getElementById('gallery-modal-text').textContent = photoCount
+    ? `${card.text} ${photoCount} photo added, with ${openSlotCount} open slots ready for more.`
+    : `${card.text} ${card.slots} empty slots are ready for your photos.`;
   document.getElementById('gallery-modal-progress').textContent = `${String(index + 1).padStart(2, '0')} / ${String(cards.length).padStart(2, '0')}`;
+  const photoWrap = document.getElementById('gallery-modal-photo-wrap');
+  const photo = document.getElementById('gallery-modal-photo');
+  const caption = document.getElementById('gallery-modal-photo-caption');
+  if (photoWrap && photo && caption) {
+    let selectedPhoto = card.photos?.[photoIndex];
+    if (!selectedPhoto) {
+      selectedPhoto = card.photos?.[0];
+    }
+    if (selectedPhoto) {
+      photo.src = selectedPhoto.src;
+      photo.alt = selectedPhoto.alt || selectedPhoto.caption || card.title;
+      caption.textContent = selectedPhoto.caption || card.title;
+      photoWrap.hidden = false;
+    } else {
+      photo.removeAttribute('src');
+      photo.alt = '';
+      caption.textContent = '';
+      photoWrap.hidden = true;
+    }
+  }
   if (dialog) dialog.scrollTop = 0;
 
   modal.classList.add('open');

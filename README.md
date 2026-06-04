@@ -1,6 +1,18 @@
 # DigitalYearBook
 A school Project
 
+## Deploy setup
+
+This is a static site, so the browser cannot read `.env` directly after deployment.
+Set these environment variables in your deploy platform, then run the normal build:
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+
+`npm run build` generates `supabase-config.js` from those values. Locally, the same
+script reads your `.env` file. The anon key must come from the same Supabase
+project as the URL, or login will fail.
+
 ## Supabase Table
 
 This project uses Supabase auth and an optional `profiles` table for yearbook data.

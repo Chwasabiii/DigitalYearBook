@@ -76,10 +76,14 @@ const Router = {
 
       case 'mygroup':
       case 'emerging':
-      case 'memories':
       case 'gallery':
       case 'about':
         html = InfoPages.render(page);
+        break;
+
+      case 'memories':
+        html = InfoPages.render('gallery');
+        Router.currentPage = 'gallery';
         break;
 
       default:

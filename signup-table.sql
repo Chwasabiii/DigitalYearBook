@@ -5,12 +5,11 @@
 --
 -- Important:
 -- Supabase Auth stores the real login account.
--- This file does not create any auth trigger, so it should not cause
--- "Database error saving new user".
+-- This trigger copies signup metadata into public.signup_profiles so the
+-- profile row is created even when email confirmation delays the client session.
 
 create extension if not exists pgcrypto;
 
--- Remove old signup trigger if it exists from a previous SQL file.
 drop trigger if exists on_auth_user_created on auth.users;
 drop function if exists public.handle_new_user();
 drop function if exists handle_new_user();
@@ -26,12 +25,49 @@ create table if not exists public.signup_profiles (
   updated_at timestamptz default now()
 );
 
-create unique index if not exists signup_profiles_user_id_unique_idx
-  on public.signup_profiles(user_id)
-  where user_id is not null;
+drop index if exists public.signup_profiles_user_id_unique_idx;
+
+create unique index signup_profiles_user_id_unique_idx
+  on public.signup_profiles(user_id);
 
 create index if not exists signup_profiles_email_idx
   on public.signup_profiles(email);
+
+create or replace function public.handle_new_user()
+returns trigger
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.signup_profiles (
+    user_id,
+    full_name,
+    username,
+    email,
+    course
+  )
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', new.email, 'New User'),
+    nullif(new.raw_user_meta_data->>'username', ''),
+    new.email,
+    coalesce(nullif(new.raw_user_meta_data->>'course', ''), 'Undeclared')
+  )
+  on conflict (user_id) do update
+    set full_name = excluded.full_name,
+        username = excluded.username,
+        email = excluded.email,
+        course = excluded.course,
+        updated_at = now();
+
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row
+  execute procedure public.handle_new_user();
 
 create or replace function public.signup_profiles_set_updated_at()
 returns trigger as $$

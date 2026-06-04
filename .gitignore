@@ -20,4 +20,3 @@ yarn-error.log
 
 # Supabase and local secrets
 .env
-supabase-config.js

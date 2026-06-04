@@ -131,14 +131,21 @@ async function handleSignup() {
 
   // Validation
   if (!name || !email || !username || !password || !confirmPassword) {
-    document.querySelectorAll('.input-group').forEach(el => {
-      el.style.animation = 'none';
-      requestAnimationFrame(() => {
-        el.style.animation = 'shake 0.3s ease';
-      });
+    [
+      document.getElementById('signup-name'),
+      document.getElementById('signup-email'),
+      document.getElementById('signup-username'),
+      document.getElementById('signup-password'),
+      document.getElementById('signup-confirm-password'),
+    ].forEach(input => {
+      input?.closest('.input-group')?.classList.toggle('is-invalid', !input.value.trim());
     });
     return;
   }
+
+  document.querySelectorAll('.input-group.is-invalid').forEach(el => {
+    el.classList.remove('is-invalid');
+  });
 
   if (password !== confirmPassword) {
     alert('Passwords do not match!');

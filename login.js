@@ -87,15 +87,18 @@ async function handleLogin() {
   const submitButton = document.getElementById('login-submit');
 
   if (!email || !password) {
-    // Simple shake animation on empty fields
-    document.querySelectorAll('.input-group').forEach(el => {
-      el.style.animation = 'none';
-      requestAnimationFrame(() => {
-        el.style.animation = 'shake 0.3s ease';
-      });
+    [
+      document.getElementById('login-email'),
+      document.getElementById('login-password'),
+    ].forEach(input => {
+      input?.closest('.input-group')?.classList.toggle('is-invalid', !input.value.trim());
     });
     return;
   }
+
+  document.querySelectorAll('.input-group.is-invalid').forEach(el => {
+    el.classList.remove('is-invalid');
+  });
 
   if (window.SupabaseApp && SupabaseApp.signInUser) {
     loginInProgress = true;
@@ -118,8 +121,9 @@ async function handleLogin() {
       }
 
       Router.go('home');
-    } catch {
-      alert('Unable to sign in. Please check your credentials.');
+    } catch (error) {
+      console.error('Sign in failed:', error);
+      alert(error?.message || 'Unable to sign in. Please check your credentials.');
     } finally {
       loginInProgress = false;
       if (submitButton) {
@@ -134,20 +138,3 @@ async function handleLogin() {
 
 // Register page
 window.LoginPage = { render: renderLogin, handleLogin };
-
-// Shake keyframe (injected once)
-(function injectShakeStyle() {
-  if (document.getElementById('shake-style')) return;
-  const style = document.createElement('style');
-  style.id = 'shake-style';
-  style.textContent = `
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%       { transform: translateX(-6px); }
-      40%       { transform: translateX(6px); }
-      60%       { transform: translateX(-4px); }
-      80%       { transform: translateX(4px); }
-    }
-  `;
-  document.head.appendChild(style);
-})();

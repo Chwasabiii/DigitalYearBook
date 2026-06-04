@@ -17,7 +17,6 @@ const NAV_TABS = [
   { label: 'My Group',       id: 'mygroup',       active: false },
   { label: 'Organizations',  id: 'organizations', active: false },
   { label: 'Emerging Tech',  id: 'emerging',      active: false },
-  { label: 'Memories',       id: 'memories',      active: false },
   { label: 'Gallery',        id: 'gallery',       active: false },
   { label: 'About',          id: 'about',         active: false },
 ];
@@ -79,6 +78,22 @@ const HOME_GALLERY_PREVIEW = [
   { label: 'Candid Frames', detail: 'The in-between memories' },
 ];
 
+function getHomeGalleryPreviewItems() {
+  if (typeof INFO_PAGES !== 'undefined' && INFO_PAGES.gallery) {
+    const galleryPhotos = INFO_PAGES.gallery.cards.flatMap(card =>
+      (card.photos || []).map(photo => ({
+        label: photo.caption || card.title,
+        detail: card.text || card.label,
+        src: photo.src,
+      }))
+    );
+    if (galleryPhotos.length) {
+      return galleryPhotos.slice(0, 4);
+    }
+  }
+  return HOME_GALLERY_PREVIEW;
+}
+
 function getCourseGroups() {
   return [...new Set(STUDENTS.map(student => student.course))];
 }
@@ -117,12 +132,19 @@ function renderMemoryItems() {
 }
 
 function renderGalleryPreview() {
-  return HOME_GALLERY_PREVIEW.map((item, index) => `
-    <button type="button" class="home-gallery-tile home-gallery-tile-${index + 1}" onclick="Router.go('gallery')">
+  const previewItems = getHomeGalleryPreviewItems();
+  return previewItems.map((item, index) => {
+    const hasImage = item.src;
+    const tileStyle = hasImage
+      ? `style="background-image: url('${item.src}'); background-size: cover; background-position: center;"`
+      : '';
+    return `
+    <button type="button" class="home-gallery-tile home-gallery-tile-${index + 1}" ${tileStyle} onclick="Router.go('gallery')">
       <span>${item.label}</span>
       <strong>${item.detail}</strong>
     </button>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function renderCourseGroups() {
@@ -207,7 +229,7 @@ function renderHome() {
               <p class="home-kicker">Memory Lane</p>
               <h2>Recent memories</h2>
             </div>
-            <button type="button" class="home-secondary-btn" onclick="Router.go('memories')">View Memories</button>
+            <button type="button" class="home-secondary-btn" onclick="Router.go('gallery')">View Memories</button>
           </div>
           <div class="home-memory-list">
             ${renderMemoryItems()}

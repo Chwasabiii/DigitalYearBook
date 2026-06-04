@@ -2,16 +2,20 @@
 //  supabase.js — Supabase client helper
 // =============================================
 
-const SUPABASE_URL = window.SUPABASE_CONFIG?.url || 'https://your-project-id.supabase.co';
-const SUPABASE_ANON_KEY = window.SUPABASE_CONFIG?.anonKey || 'YOUR_ANON_KEY';
+const SUPABASE_URL = window.SUPABASE_CONFIG?.url || '';
+const SUPABASE_ANON_KEY = window.SUPABASE_CONFIG?.anonKey || '';
 
 if (!window.supabase) {
   console.warn('Supabase JS not loaded. Make sure the CDN script is included in index.html.');
 }
 
-const supabaseClient = window.supabase
+const supabaseClient = window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
+
+if (!window.SUPABASE_CONFIG) {
+  console.warn('Supabase config not loaded. Make sure supabase-config.js is deployed before supabase.js.');
+}
 
 function getFriendlyAuthError(error) {
   const message = error?.message || '';
@@ -31,6 +35,10 @@ function getFriendlyAuthError(error) {
 
   if (lowerMessage.includes('email not confirmed')) {
     return 'Please confirm your email before signing in.';
+  }
+
+  if (lowerMessage.includes('failed to fetch') || lowerMessage.includes('networkerror')) {
+    return 'Could not reach Supabase from the browser. Check your internet connection, browser extensions, and that you are opening the site through the local server URL instead of the file directly.';
   }
 
   return message || 'Something went wrong. Please try again.';
@@ -66,9 +74,27 @@ async function saveSignupProfile(user, { name, username, email, course = 'Undecl
   return { data, error };
 }
 
+function hasRealSupabaseConfig() {
+  return Boolean(
+    supabaseClient &&
+    SUPABASE_URL &&
+    SUPABASE_ANON_KEY &&
+    !SUPABASE_URL.includes('your-project-id') &&
+    SUPABASE_ANON_KEY !== 'YOUR_ANON_KEY'
+  );
+}
+
 async function signUpUser({ name, username, email, password }) {
   if (!supabaseClient) {
     return { error: { message: 'Supabase client not initialized.' } };
+  }
+
+  if (!hasRealSupabaseConfig()) {
+    return {
+      error: {
+        message: 'Supabase is not configured. Generate supabase-config.js from your .env first.',
+      },
+    };
   }
 
   const { data, error } = await supabaseClient.auth.signUp({
@@ -89,7 +115,13 @@ async function signUpUser({ name, username, email, password }) {
   if (data?.session?.user) {
     const profileResult = await saveSignupProfile(data.session.user, { name, username, email });
     if (profileResult.error) {
-      console.warn('Could not save signup profile row:', profileResult.error.message || profileResult.error);
+      return {
+        data,
+        error: {
+          ...profileResult.error,
+          message: `Account was created, but the signup profile could not be saved: ${profileResult.error.message || 'Unknown profile error.'}`,
+        },
+      };
     }
     return { data, error, profile: profileResult };
   }
@@ -102,10 +134,33 @@ async function signInUser(email, password) {
     return { error: { message: 'Supabase client not initialized.' } };
   }
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password,
-  });
+  if (!hasRealSupabaseConfig()) {
+    return {
+      error: {
+        message: 'Supabase is not configured. Generate supabase-config.js from your .env first.',
+      },
+    };
+  }
+
+  let data;
+  let error;
+
+  try {
+    const result = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    });
+    data = result.data;
+    error = result.error;
+  } catch (networkError) {
+    return {
+      data: null,
+      error: {
+        message: getFriendlyAuthError(networkError),
+        originalError: networkError,
+      },
+    };
+  }
 
   if (error) {
     return { data, error: { ...error, message: getFriendlyAuthError(error) } };
@@ -114,7 +169,7 @@ async function signInUser(email, password) {
   if (data?.session?.user) {
     const profileResult = await saveSignupProfile(data.session.user, { email });
     if (profileResult.error) {
-      console.warn('Could not save login profile row:', profileResult.error.message || profileResult.error);
+      console.warn('Signed in, but the signup profile could not be saved:', profileResult.error);
     }
   }
 

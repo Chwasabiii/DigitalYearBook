@@ -37,7 +37,11 @@ function renderProfileCard(student) {
           <div class="profile-avatar">${renderProfileAvatar(student)}</div>
           <h3>${student.name}</h3>
           <p>${student.course} &middot; Batch ${student.batch}</p>
-          <button type="button" class="profile-view-btn" onclick="ProfilePage.openStudent(${student.id}); event.stopPropagation();">View Profile</button>
+          <div class="profile-card-actions">
+            <button type="button" class="profile-view-btn" onclick="ProfilePage.openStudent(${student.id}); event.stopPropagation();">View Profile</button>
+            ${student.portfolio ? `<a href="${student.portfolio}" target="_blank" rel="noopener noreferrer" class="profile-view-btn profile-portfolio-btn" title="Open digital portfolio" aria-label="Open ${student.name}'s digital portfolio" onclick="event.stopPropagation();">${renderPortfolioIcon()}</a>` : ''}
+            ${student.github ? `<a href="${student.github}" target="_blank" rel="noopener noreferrer" class="profile-view-btn profile-github-btn" title="Open GitHub profile" aria-label="Open ${student.name}'s GitHub profile" onclick="event.stopPropagation();">${renderGithubIcon()}</a>` : ''}
+          </div>
         </div>
         <div class="profile-card-face profile-card-back">
           <div class="profile-photo-preview">${renderProfilePhoto(student)}</div>
@@ -51,6 +55,78 @@ function renderProfileCard(student) {
 
 function renderDetailList(items) {
   return items.map(item => `<li>${item}</li>`).join('');
+}
+
+function renderPortfolioIcon() {
+  return `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 17 17 7"></path>
+      <path d="M8 7h9v9"></path>
+      <path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"></path>
+    </svg>
+  `;
+}
+
+function renderGithubIcon() {
+  return `
+    <svg viewBox="0 0 24 24" aria-hidden="true" class="github-icon">
+      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.93.58.1.79-.25.79-.56v-2.01c-3.2.7-3.88-1.38-3.88-1.38-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18.92-.26 1.91-.38 2.89-.39.98.01 1.97.13 2.89.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.42-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.79.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"></path>
+    </svg>
+  `;
+}
+
+function getPortfolioHost(portfolioUrl) {
+  try {
+    return new URL(portfolioUrl).hostname;
+  } catch (error) {
+    return portfolioUrl;
+  }
+}
+
+function renderPortfolioAction(student) {
+  if (!student.portfolio) {
+    return `
+      <span class="portfolio-link portfolio-icon-link portfolio-link-disabled" title="Portfolio coming soon" aria-label="Portfolio coming soon">
+        ${renderPortfolioIcon()}
+      </span>
+      <span>Portfolio link will be added here.</span>
+    `;
+  }
+
+  return `
+    <a href="${student.portfolio}" target="_blank" rel="noopener noreferrer" class="portfolio-link portfolio-icon-link" title="Open digital portfolio" aria-label="Open ${student.name}'s digital portfolio">
+      ${renderPortfolioIcon()}
+    </a>
+    <span>${getPortfolioHost(student.portfolio)}</span>
+  `;
+}
+
+function renderGithubAction(student) {
+  if (!student.github) {
+    return `
+      <span class="profile-social-link profile-social-link-disabled" title="GitHub coming soon" aria-label="GitHub coming soon">
+        ${renderGithubIcon()}
+      </span>
+    `;
+  }
+
+  return `
+    <a href="${student.github}" target="_blank" rel="noopener noreferrer" class="profile-social-link" title="Open GitHub profile" aria-label="Open ${student.name}'s GitHub profile">
+      ${renderGithubIcon()}
+    </a>
+  `;
+}
+
+function renderSocialHandle(student) {
+  if (!student.facebook) {
+    return `<span>${student.socials}</span>`;
+  }
+
+  return `
+    <a href="${student.facebook}" target="_blank" rel="noopener noreferrer" class="student-social-handle" title="Open Facebook profile" aria-label="Open ${student.name}'s Facebook profile">
+      ${student.socials}
+    </a>
+  `;
 }
 
 function getStudentById(studentId) {
@@ -154,10 +230,17 @@ function renderStudentDetail(studentId) {
             <h2>Favorite Memories</h2>
             <ul>${renderDetailList(student.memories)}</ul>
           </article>
+          <article class="student-detail-panel student-detail-portfolio">
+            <h2>Digital Portfolio</h2>
+            <p>${renderPortfolioAction(student)}</p>
+          </article>
           <article class="student-detail-panel student-detail-message">
             <h2>Message From Classmates</h2>
             <p>${student.message}</p>
-            <span>${student.socials}</span>
+            <div class="student-social-row">
+              ${renderSocialHandle(student)}
+              ${renderGithubAction(student)}
+            </div>
           </article>
         </section>
       </main>

@@ -20,11 +20,39 @@ let env = {};
 try {
   env = parseEnv(fs.readFileSync(envPath, 'utf8'));
 } catch (error) {
-  console.warn('.env file not found or could not be read. Using defaults in supabase-config.js.');
+  console.warn('.env file not found or could not be read. Falling back to deployment environment variables.');
 }
 
-const url = env.SUPABASE_URL || 'https://your-project-id.supabase.co';
-const anonKey = env.SUPABASE_ANON_KEY || 'YOUR_ANON_KEY';
+const url = process.env.SUPABASE_URL || env.SUPABASE_URL || 'https://your-project-id.supabase.co';
+const anonKey = process.env.SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || 'YOUR_ANON_KEY';
+
+function getProjectRefFromUrl(value) {
+  const match = String(value).match(/^https:\/\/([a-z0-9-]+)\.supabase\.co\/?$/i);
+  return match?.[1] || null;
+}
+
+function getProjectRefFromJwt(value) {
+  try {
+    const [, payload] = String(value).split('.');
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = JSON.parse(Buffer.from(normalized, 'base64').toString('utf8'));
+    return decoded?.ref || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+const urlProjectRef = getProjectRefFromUrl(url);
+const keyProjectRef = getProjectRefFromJwt(anonKey);
+
+if (urlProjectRef && keyProjectRef && urlProjectRef !== keyProjectRef) {
+  console.error(
+    `Supabase config mismatch: SUPABASE_URL is for "${urlProjectRef}", but SUPABASE_ANON_KEY is for "${keyProjectRef}".`
+  );
+  console.error('Use the anon public key from the same Supabase project as SUPABASE_URL.');
+  process.exit(1);
+}
 
 const content = `// =============================================
 //  supabase-config.js — generated from .env
