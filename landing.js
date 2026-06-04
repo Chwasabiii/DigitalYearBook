@@ -7,21 +7,15 @@ function renderLanding() {
     <div id="page-landing" class="page active">
       <!-- Navbar -->
       <nav class="navbar">
-        <span class="navbar-brand">Landing Airplane</span>
+        <span class="navbar-brand">Yearbook 2026</span>
         <div class="navbar-right">
-          <a href="#" class="contact-link" onclick="Router.go('home'); return false;">CONTACT US</a>
+          <a href="#" class="contact-link" onclick="Router.go('home'); return false;">GET STARTED</a>
         </div>
       </nav>
 
       <!-- Hero -->
       <div class="hero-wrapper">
-        <!-- Background image: replace src with your image path -->
         <div class="hero-bg-placeholder">
-          <!-- 
-            TO ADD YOUR IMAGE:
-            Remove the div above and use:
-            <img src="images/hero-bg.jpg" class="hero-bg" alt="Hero background" />
-          -->
         </div>
 
         <div class="hero-overlay">
@@ -52,14 +46,28 @@ function renderLanding() {
             </svg>
           </div>
 
-          <p class="hero-title fade-up" style="animation-delay:0.1s">Welcome!</p>
-          <h1 class="hero-heading fade-up" style="animation-delay:0.2s">Yearbook 2026</h1>
+          <p class="hero-title fade-up" style="animation-delay:0.1s">STUDENT YEARBOOK</p>
+          <h1 class="hero-heading fade-up" style="animation-delay:0.2s">WELCOME!</h1>
           <button class="btn-explore fade-up" style="animation-delay:0.35s"
             onclick="Router.go('login')">
             Explore
           </button>
         </div>
       </div>
+
+      <footer class="page-footer">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <strong>Yearbook 2026</strong>
+            <span>Built for students, styled for IT.</span>
+          </div>
+          <div class="footer-links">
+            <a href="#" onclick="Router.go('home'); return false;">Dashboard</a>
+            <a href="#" onclick="Router.go('login'); return false;">Sign In</a>
+            <a href="#" onclick="Router.go('about'); return false;">About</a>
+          </div>
+        </div>
+      </footer>
     </div>
   `;
 }

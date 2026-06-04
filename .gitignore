@@ -17,3 +17,7 @@ yarn-error.log
 
 # OS
 .DS_Store
+
+# Supabase and local secrets
+.env
+supabase-config.js

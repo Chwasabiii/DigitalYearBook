@@ -2,6 +2,8 @@
 //  signup.js — Registration / Sign Up Page
 // =============================================
 
+let signupInProgress = false;
+
 function renderSignup() {
   return `
     <div id="page-signup" class="page active">
@@ -102,7 +104,7 @@ function renderSignup() {
             </div>
 
             <!-- Signup button -->
-            <button class="btn-signup" onclick="SignupPage.handleSignup()">
+            <button class="btn-signup" id="signup-submit" onclick="SignupPage.handleSignup()">
               SIGN UP
             </button>
 
@@ -117,12 +119,15 @@ function renderSignup() {
   `;
 }
 
-function handleSignup() {
+async function handleSignup() {
+  if (signupInProgress) return;
+
   const name = document.getElementById('signup-name').value.trim();
   const email = document.getElementById('signup-email').value.trim();
   const username = document.getElementById('signup-username').value.trim();
   const password = document.getElementById('signup-password').value.trim();
   const confirmPassword = document.getElementById('signup-confirm-password').value.trim();
+  const submitButton = document.getElementById('signup-submit');
 
   // Validation
   if (!name || !email || !username || !password || !confirmPassword) {
@@ -145,7 +150,47 @@ function handleSignup() {
     return;
   }
 
-  // Navigate to home
+  if (window.SupabaseApp && SupabaseApp.signUpUser) {
+    signupInProgress = true;
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'CREATING...';
+    }
+
+    try {
+      const result = await SupabaseApp.signUpUser({ name, username, email, password });
+      if (result.error) {
+        alert(result.error.message || 'Account creation failed.');
+        return;
+      }
+
+      if (result.data?.session?.user) {
+        window.YearbookUser = result.data.session.user;
+        if (window.SupabaseApp?.initializeAuth) {
+          await window.SupabaseApp.initializeAuth();
+        }
+        Router.go('home');
+        return;
+      }
+
+      if (result.data?.user) {
+        alert('Account created. Check your email to confirm your address, then sign in.');
+        Router.go('login');
+        return;
+      }
+
+      alert('Account created. Please sign in.');
+      Router.go('login');
+      return;
+    } finally {
+      signupInProgress = false;
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'SIGN UP';
+      }
+    }
+  }
+
   Router.go('home');
 }
 

@@ -2,6 +2,8 @@
 //  login.js — Authentication / Sign In Page
 // =============================================
 
+let loginInProgress = false;
+
 function renderLogin() {
   console.log('Rendering login page');
   return `
@@ -27,18 +29,18 @@ function renderLogin() {
             <h2>Sign In</h2>
             <p>Enter your student credentials.</p>
 
-            <!-- Username field -->
+            <!-- Email field -->
             <div class="input-group">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
               </svg>
               <input
-                type="text"
-                id="login-username"
-                placeholder="Username"
-                autocomplete="username"
+                type="email"
+                id="login-email"
+                placeholder="Email"
+                autocomplete="email"
               />
             </div>
 
@@ -58,7 +60,7 @@ function renderLogin() {
             </div>
 
             <!-- Login button -->
-            <button class="btn-login" onclick="LoginPage.handleLogin()">
+            <button class="btn-login" id="login-submit" onclick="LoginPage.handleLogin()">
               LOGIN
             </button>
 
@@ -77,11 +79,14 @@ function renderLogin() {
   `;
 }
 
-function handleLogin() {
-  const username = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value.trim();
+async function handleLogin() {
+  if (loginInProgress) return;
 
-  if (!username || !password) {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const submitButton = document.getElementById('login-submit');
+
+  if (!email || !password) {
     // Simple shake animation on empty fields
     document.querySelectorAll('.input-group').forEach(el => {
       el.style.animation = 'none';
@@ -92,8 +97,39 @@ function handleLogin() {
     return;
   }
 
-  // Navigate to home
-  Router.go('home');
+  if (window.SupabaseApp && SupabaseApp.signInUser) {
+    loginInProgress = true;
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = 'SIGNING IN...';
+    }
+
+    try {
+      const result = await SupabaseApp.signInUser(email, password);
+      if (result.error) {
+        alert(result.error.message || 'Sign in failed.');
+        return;
+      }
+
+      const session = result.data?.session;
+      window.YearbookUser = session?.user || null;
+      if (window.SupabaseApp?.initializeAuth) {
+        await window.SupabaseApp.initializeAuth();
+      }
+
+      Router.go('home');
+    } catch {
+      alert('Unable to sign in. Please check your credentials.');
+    } finally {
+      loginInProgress = false;
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'LOGIN';
+      }
+    }
+  } else {
+    Router.go('home');
+  }
 }
 
 // Register page
