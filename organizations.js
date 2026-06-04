@@ -46,7 +46,7 @@ function setTab(tabId) {
 
 function renderOrganizations() {
   return `
-    <div class="page-shell">
+    <div class="page-shell org-page">
       <!-- Navbar with tabs -->
       <nav class="navbar">
         ${renderUserMenu()}

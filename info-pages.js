@@ -6,11 +6,19 @@ const INFO_PAGES = {
   mygroup: {
     kicker: 'IT Circle',
     title: 'My Group',
-    intro: 'A small space for the people you built projects with, studied beside, and survived deadlines with.',
+    intro: 'A dedicated space for the classmates, collaborators, and project partners who made this yearbook possible.',
+    highlight: 'More than a page — a shared story of teamwork, late-night problem solving, and the energy that kept the batch moving forward.',
+    stats: [
+      { value: '8', label: 'Core teammates' },
+      { value: '5', label: 'Projects launched' },
+      { value: '40+', label: 'Study sessions' },
+      { value: '1', label: 'Shared mission' },
+    ],
     cards: [
-      { title: 'Group Identity', text: 'Information Technology students with different strengths, one shared yearbook story.' },
-      { title: 'Shared Work', text: 'Systems, reports, prototypes, documentation, and the little fixes nobody sees.' },
-      { title: 'Class Bond', text: 'A group shaped by teamwork, patience, humor, and pressure.' },
+      { title: 'Team Identity', text: 'A group built on curiosity, patience, and the confidence to tackle every challenge together.' },
+      { title: 'Group Roles', text: 'Design, coding, documentation, research, and presentation — every contribution helped the yearbook shine.' },
+      { title: 'Collaborative Culture', text: 'Peer review, shared notes, and honest feedback made work stronger and kept the momentum alive.' },
+      { title: 'Outcome', text: 'A living yearbook experience that reflects both the project and the people behind it.' },
     ],
   },
   emerging: {
@@ -156,10 +164,10 @@ const INFO_PAGES = {
     title: 'Memories',
     intro: 'The moments that made the school year feel real: stressful, funny, tiring, and worth remembering.',
     cards: [
-      { title: 'Project Defense', text: 'Last-minute edits, nervous rehearsals, and the relief after answering the final question.' },
-      { title: 'BITS Activities', text: 'Workshops and events that made technology feel like a community, not just a subject.' },
-      { title: 'Class Photo Day', text: 'The day everyone paused long enough to become part of the same frame.' },
-      { title: 'Quiet Wins', text: 'Fixed bugs, submitted files, passed activities, and classmates who helped without making noise about it.' },
+      { title: 'Project Defense', label: 'Project', mood: 'Prototype showcase', image: 'images/project-defense.jpg', imageAlt: 'Students presenting a project display with a laptop and a store model', text: 'A project showcase moment with the team, prototype model, and system demo ready on the table.' },
+      { title: 'BITS Activities', label: 'Community', mood: 'Shared momentum', text: 'Workshops and events that made technology feel like a community, not just a subject.' },
+      { title: 'Class Photo Day', label: 'Snapshot', mood: 'Everyone together', text: 'The day everyone paused long enough to become part of the same frame.' },
+      { title: 'Quiet Wins', label: 'Everyday', mood: 'Small victories', text: 'Fixed bugs, submitted files, passed activities, and classmates who helped without making noise about it.' },
     ],
   },
   gallery: {
@@ -167,19 +175,27 @@ const INFO_PAGES = {
     title: 'Gallery',
     intro: 'A simple gallery wall for future photos. Add images later and this page can become the visual heart of the yearbook.',
     cards: [
-      { title: 'Portraits', text: 'Individual student photos for each profile and card.' },
-      { title: 'Group Photos', text: 'Class pictures, organization events, and team memories.' },
-      { title: 'Project Moments', text: 'Screenshots, prototypes, booths, defenses, and behind-the-scenes work.' },
+      { title: 'Portraits', label: 'Profiles', slots: 12, text: 'Individual student photos for each profile and card.' },
+      { title: 'Group Photos', label: 'Class', slots: 6, text: 'Class pictures, organization events, and team memories.' },
+      { title: 'Project Moments', label: 'Work', slots: 8, text: 'Screenshots, prototypes, booths, defenses, and behind-the-scenes work.' },
     ],
   },
   about: {
     kicker: 'About This Site',
-    title: 'About',
-    intro: 'This digital yearbook preserves the people, projects, organizations, and memories of the IT batch in one shared space.',
+    title: 'Digital Yearbook for IT',
+    intro: 'A living archive for our batch: people, projects, clubs, memories, and the skills that shaped our year together.',
+    highlight: 'Designed to feel active, easy to update, and ready for future students who want to explore what we built and why it mattered.',
+    metrics: [
+      { value: '4', label: 'Core sections' },
+      { value: '30+', label: 'Story cards' },
+      { value: '100%', label: 'Responsive design' },
+      { value: 'One', label: 'Shared experience' },
+    ],
     cards: [
-      { title: 'Purpose', text: 'To make the yearbook easy to explore, update, and remember beyond printed pages.' },
-      { title: 'Built For IT', text: 'The content, profiles, memories, and tech sections are centered on Information Technology students.' },
-      { title: 'Next Step', text: 'Add real photos, quotes, awards, and gallery images to make it feel fully personal.' },
+      { title: 'Purpose', text: 'Keep the yearbook alive beyond print by making memories searchable, sharable, and simple to revisit.' },
+      { title: 'Built for IT', text: 'From profiles to projects, the content is centered on what matters to the Information Technology batch.' },
+      { title: 'How it works', text: 'A modular page layout with smart sections, animated entry, and a focus on moments that tell your story.' },
+      { title: 'Keep it growing', text: 'Add photos, quotes, club highlights, awards, and gallery details so the page stays fresh.' },
     ],
   },
 };
@@ -196,14 +212,15 @@ function renderInfoNavTabs(activeId) {
 function renderInfoCards(cards, pageId) {
   return cards.map((card, idx) => {
     const isEmerging = pageId === 'emerging';
-    // Use the provided image only for the second card (index 1)
+    const isAbout = pageId === 'about';
     const useImageBadge = isEmerging && idx === 1;
     const badgeContent = useImageBadge
       ? `<img src="images/emerging-2.jpg" alt="${card.title} badge" class="card-badge-img"/>`
       : String(idx + 1).padStart(2, '0');
+    const revealStyle = isAbout ? `style="animation: fadeUp 0.65s var(--ease-out) both; animation-delay: ${idx * 90}ms;"` : '';
 
     return `
-    <article class="info-page-card">
+    <article class="info-page-card" ${revealStyle}>
       <div class="card-badge">${badgeContent}</div>
       <div class="card-body">
         <h2>${card.title}</h2>
@@ -212,6 +229,84 @@ function renderInfoCards(cards, pageId) {
     </article>
   `;
   }).join('');
+}
+
+function renderAboutPage(page) {
+  const metrics = page.metrics.map(item => `
+    <div class="about-metric-card">
+      <strong>${item.value}</strong>
+      <span>${item.label}</span>
+    </div>
+  `).join('');
+
+  return `
+    <section class="about-hero">
+      <div class="about-hero-glow" aria-hidden="true"></div>
+      <div class="about-hero-copy">
+        <p class="home-kicker">${page.kicker}</p>
+        <h1>${page.title}</h1>
+        <p>${page.intro}</p>
+        <p class="about-highlight">${page.highlight}</p>
+        <div class="about-pill-row" aria-label="Yearbook values">
+          <span>Interactive</span>
+          <span>Readable</span>
+          <span>Memorable</span>
+          <span>Future-ready</span>
+        </div>
+      </div>
+      <div class="about-hero-panel">
+        <h2>Why this page matters</h2>
+        <p>It turns the yearbook into a living story, not a flat snapshot. Every section is built so your batch can keep adding memories and see what shaped your IT journey.</p>
+      </div>
+    </section>
+
+    <section class="about-metrics">
+      ${metrics}
+    </section>
+
+    <section class="info-page-grid about-grid">
+      ${renderInfoCards(page.cards, 'about')}
+    </section>
+  `;
+}
+
+function renderMyGroupPage(page) {
+  const stats = page.stats.map(item => `
+    <article class="team-stat-card">
+      <strong>${item.value}</strong>
+      <span>${item.label}</span>
+    </article>
+  `).join('');
+
+  return `
+    <section class="team-hero">
+      <div class="team-hero-glow" aria-hidden="true"></div>
+      <div class="team-hero-copy">
+        <p class="home-kicker">${page.kicker}</p>
+        <h1>${page.title}</h1>
+        <p>${page.intro}</p>
+        <p class="team-highlight">${page.highlight}</p>
+        <div class="team-pill-row" aria-label="Team values">
+          <span>Curiosity</span>
+          <span>Collaboration</span>
+          <span>Resilience</span>
+          <span>Growth</span>
+        </div>
+      </div>
+      <aside class="team-hero-panel">
+        <h2>What powered us</h2>
+        <p>We leaned on strong communication, shared goals, and the willingness to solve hard problems together. This page honors how the group made the yearbook more than just a website.</p>
+      </aside>
+    </section>
+
+    <section class="team-stats">
+      ${stats}
+    </section>
+
+    <section class="info-page-grid about-grid">
+      ${renderInfoCards(page.cards, 'mygroup')}
+    </section>
+  `;
 }
 
 function renderEmergingTechPage(page) {
@@ -369,7 +464,171 @@ function renderEmergingTechPage(page) {
   `;
 }
 
+function renderMemoriesPage(page) {
+  const memoryCards = page.cards.map((card, idx) => `
+    <article class="memory-card ${card.image ? 'has-photo' : ''}" role="button" tabindex="0" onclick="showMemoryModal(${idx})" onkeydown="handleMemoryCardKey(event, ${idx})">
+      ${card.image ? `<div class="memory-card-photo"><img src="${card.image}" alt="${card.imageAlt}"></div>` : ''}
+      <div class="memory-card-index">${String(idx + 1).padStart(2, '0')}</div>
+      <div class="card-body">
+        <span class="memory-card-label">${card.label}</span>
+        <h2>${card.title}</h2>
+        <p>${card.text}</p>
+        <div class="memory-card-footer">
+          <span>${card.mood}</span>
+          <span class="memory-card-action">Open note</span>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  return `
+    <section class="memory-hero">
+      <div class="memory-hero-copy">
+        <p class="home-kicker">${page.kicker}</p>
+        <h1>${page.title}</h1>
+        <p>${page.intro}</p>
+      </div>
+      <aside class="memory-hero-panel ${page.cards[0].image ? 'has-photo' : ''}">
+        ${page.cards[0].image ? `<img src="${page.cards[0].image}" alt="${page.cards[0].imageAlt}">` : ''}
+        <span>Memory Board</span>
+        <strong>${String(page.cards.length).padStart(2, '0')}</strong>
+        <p>Project photo added. More memories can follow when you send them.</p>
+      </aside>
+    </section>
+
+    <section class="memory-stats" aria-label="Memory summary">
+      <div>
+        <strong>${String(page.cards.length).padStart(2, '0')}</strong>
+        <span>Stories saved</span>
+      </div>
+      <div>
+        <strong>${page.cards.filter(card => card.image).length}</strong>
+        <span>Photos added</span>
+      </div>
+      <div>
+        <strong>2026</strong>
+        <span>Batch archive</span>
+      </div>
+    </section>
+
+    <section class="memory-feature">
+      ${page.cards[0].image ? `<div class="memory-feature-photo"><img src="${page.cards[0].image}" alt="${page.cards[0].imageAlt}"></div>` : ''}
+      <div>
+        <p class="home-kicker">Featured Project</p>
+        <h2>${page.cards[0].title}</h2>
+        <p>${page.cards[0].text}</p>
+      </div>
+      <button type="button" onclick="showMemoryModal(0)">Open project</button>
+    </section>
+
+    <section class="memory-grid">
+      ${memoryCards}
+    </section>
+
+    <div class="memory-modal" id="memory-modal" aria-hidden="true" onclick="handleMemoryModalBackdrop(event)">
+      <div class="memory-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="memory-modal-title">
+        <button type="button" class="memory-modal-close" aria-label="Close" onclick="closeMemoryModal()">x</button>
+        <div class="memory-modal-topline">
+          <span id="memory-modal-number">01</span>
+          <span id="memory-modal-label">Memory Note</span>
+        </div>
+        <h2 id="memory-modal-title"></h2>
+        <span class="memory-modal-mood" id="memory-modal-mood"></span>
+        <div class="memory-modal-photo" id="memory-modal-photo-wrap">
+          <img id="memory-modal-photo" src="" alt="">
+        </div>
+        <p id="memory-modal-text"></p>
+        <footer class="memory-modal-footer">
+          <button type="button" onclick="showAdjacentMemory(-1)" aria-label="Previous memory">Previous</button>
+          <span id="memory-modal-progress">01 / 04</span>
+          <button type="button" onclick="showAdjacentMemory(1)" aria-label="Next memory">Next</button>
+        </footer>
+      </div>
+    </div>
+  `;
+}
+
+function renderGalleryPage(page) {
+  const galleryCards = page.cards.map((card, idx) => `
+    <article class="gallery-album-card" role="button" tabindex="0" onclick="showGalleryModal(${idx})" onkeydown="handleGalleryCardKey(event, ${idx})">
+      <div class="gallery-album-top">
+        <span>${card.label}</span>
+        <strong>${String(card.slots).padStart(2, '0')}</strong>
+      </div>
+      <h2>${card.title}</h2>
+      <p>${card.text}</p>
+      <div class="gallery-slot-strip" aria-hidden="true">
+        ${Array.from({ length: 4 }).map((_, slotIndex) => `<span>${String(slotIndex + 1).padStart(2, '0')}</span>`).join('')}
+      </div>
+    </article>
+  `).join('');
+
+  return `
+    <section class="gallery-board-hero">
+      <div class="gallery-board-copy">
+        <p class="home-kicker">${page.kicker}</p>
+        <h1>${page.title}</h1>
+        <p>${page.intro}</p>
+      </div>
+      <aside class="gallery-board-panel">
+        <span>Photo Intake</span>
+        <strong>0</strong>
+        <p>No photos added yet. The layout is ready for the images you will send later.</p>
+      </aside>
+    </section>
+
+    <section class="gallery-dashboard" aria-label="Gallery summary">
+      <div>
+        <strong>${String(page.cards.length).padStart(2, '0')}</strong>
+        <span>Albums planned</span>
+      </div>
+      <div>
+        <strong>0</strong>
+        <span>Photos added</span>
+      </div>
+      <div>
+        <strong>${String(page.cards.reduce((total, card) => total + card.slots, 0)).padStart(2, '0')}</strong>
+        <span>Open slots</span>
+      </div>
+    </section>
+
+    <section class="gallery-empty-wall" aria-label="Empty photo slots">
+      ${Array.from({ length: 9 }).map((_, idx) => `
+        <button type="button" class="gallery-empty-slot" onclick="showGalleryModal(${idx % page.cards.length})">
+          <span>${String(idx + 1).padStart(2, '0')}</span>
+        </button>
+      `).join('')}
+    </section>
+
+    <section class="gallery-album-grid">
+      ${galleryCards}
+    </section>
+
+    <div class="gallery-modal" id="gallery-modal" aria-hidden="true" onclick="handleGalleryModalBackdrop(event)">
+      <div class="gallery-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="gallery-modal-title">
+        <button type="button" class="gallery-modal-close" aria-label="Close" onclick="closeGalleryModal()">x</button>
+        <div class="gallery-modal-topline">
+          <span id="gallery-modal-number">01</span>
+          <span id="gallery-modal-label">Album</span>
+        </div>
+        <h2 id="gallery-modal-title"></h2>
+        <p id="gallery-modal-text"></p>
+        <div class="gallery-modal-slots" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <footer class="gallery-modal-footer">
+          <button type="button" onclick="showAdjacentGallery(-1)" aria-label="Previous album">Previous</button>
+          <span id="gallery-modal-progress">01 / 03</span>
+          <button type="button" onclick="showAdjacentGallery(1)" aria-label="Next album">Next</button>
+        </footer>
+      </div>
+    </div>
+  `;
+}
+
 let activeEmergingTechIndex = 0;
+let activeMemoryIndex = 0;
+let activeGalleryIndex = 0;
 
 function getEmergingCards() {
   return INFO_PAGES.emerging.cards;
@@ -392,8 +651,14 @@ function showAdjacentEmergingTech(direction) {
 function showEmergingTechModal(index) {
   const cards = getEmergingCards();
   const card = cards[index];
-  const modal = document.getElementById('emerging-modal');
+  const modal = document.querySelector('.emerging-tech-page #emerging-modal') || document.getElementById('emerging-modal');
   if (!card || !modal) return;
+  document.querySelectorAll('#emerging-modal').forEach(existingModal => {
+    if (existingModal !== modal) existingModal.remove();
+  });
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
 
   activeEmergingTechIndex = index;
   const dialog = modal.querySelector('.emerging-modal-dialog');
@@ -450,20 +715,188 @@ function handleEmergingCardKey(event, index) {
   }
 }
 
+function getMemoryCards() {
+  return INFO_PAGES.memories.cards;
+}
+
+function showAdjacentMemory(direction) {
+  const cards = getMemoryCards();
+  const nextIndex = (activeMemoryIndex + direction + cards.length) % cards.length;
+  showMemoryModal(nextIndex);
+}
+
+function showMemoryModal(index) {
+  const cards = getMemoryCards();
+  const card = cards[index];
+  const modal = document.querySelector('.memories-page #memory-modal') || document.getElementById('memory-modal');
+  if (!card || !modal) return;
+  document.querySelectorAll('#memory-modal').forEach(existingModal => {
+    if (existingModal !== modal) existingModal.remove();
+  });
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+
+  activeMemoryIndex = index;
+  const dialog = modal.querySelector('.memory-modal-dialog');
+
+  document.getElementById('memory-modal-number').textContent = String(index + 1).padStart(2, '0');
+  document.getElementById('memory-modal-label').textContent = card.label;
+  document.getElementById('memory-modal-title').textContent = card.title;
+  document.getElementById('memory-modal-mood').textContent = card.mood;
+  document.getElementById('memory-modal-text').textContent = card.text;
+  document.getElementById('memory-modal-progress').textContent = `${String(index + 1).padStart(2, '0')} / ${String(cards.length).padStart(2, '0')}`;
+  const photoWrap = document.getElementById('memory-modal-photo-wrap');
+  const photo = document.getElementById('memory-modal-photo');
+  if (photoWrap && photo) {
+    if (card.image) {
+      photo.src = card.image;
+      photo.alt = card.imageAlt || card.title;
+      photoWrap.hidden = false;
+    } else {
+      photo.removeAttribute('src');
+      photo.alt = '';
+      photoWrap.hidden = true;
+    }
+  }
+  if (dialog) dialog.scrollTop = 0;
+
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+
+  if (dialog) {
+    dialog.classList.remove('is-refreshing');
+    void dialog.offsetWidth;
+    dialog.classList.add('is-refreshing');
+  }
+}
+
+function closeMemoryModal() {
+  const modal = document.getElementById('memory-modal');
+  if (!modal) return;
+
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+function handleMemoryModalBackdrop(event) {
+  if (event.target?.id === 'memory-modal') {
+    closeMemoryModal();
+  }
+}
+
+function handleMemoryCardKey(event, index) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    showMemoryModal(index);
+  }
+}
+
+function getGalleryCards() {
+  return INFO_PAGES.gallery.cards;
+}
+
+function showAdjacentGallery(direction) {
+  const cards = getGalleryCards();
+  const nextIndex = (activeGalleryIndex + direction + cards.length) % cards.length;
+  showGalleryModal(nextIndex);
+}
+
+function showGalleryModal(index) {
+  const cards = getGalleryCards();
+  const card = cards[index];
+  const modal = document.querySelector('.gallery-theatre-page #gallery-modal') || document.getElementById('gallery-modal');
+  if (!card || !modal) return;
+  document.querySelectorAll('#gallery-modal').forEach(existingModal => {
+    if (existingModal !== modal) existingModal.remove();
+  });
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+
+  activeGalleryIndex = index;
+  const dialog = modal.querySelector('.gallery-modal-dialog');
+
+  document.getElementById('gallery-modal-number').textContent = String(index + 1).padStart(2, '0');
+  document.getElementById('gallery-modal-label').textContent = card.label;
+  document.getElementById('gallery-modal-title').textContent = card.title;
+  document.getElementById('gallery-modal-text').textContent = `${card.text} ${card.slots} empty slots are ready for your photos.`;
+  document.getElementById('gallery-modal-progress').textContent = `${String(index + 1).padStart(2, '0')} / ${String(cards.length).padStart(2, '0')}`;
+  if (dialog) dialog.scrollTop = 0;
+
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+
+  if (dialog) {
+    dialog.classList.remove('is-refreshing');
+    void dialog.offsetWidth;
+    dialog.classList.add('is-refreshing');
+  }
+}
+
+function closeGalleryModal() {
+  const modal = document.getElementById('gallery-modal');
+  if (!modal) return;
+
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+function handleGalleryModalBackdrop(event) {
+  if (event.target?.id === 'gallery-modal') {
+    closeGalleryModal();
+  }
+}
+
+function handleGalleryCardKey(event, index) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    showGalleryModal(index);
+  }
+}
+
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     closeEmergingTechModal();
+    closeMemoryModal();
+    closeGalleryModal();
   }
 
   const modal = document.getElementById('emerging-modal');
-  if (!modal?.classList.contains('open')) return;
+  if (modal?.classList.contains('open')) {
+    if (event.key === 'ArrowLeft') {
+      showAdjacentEmergingTech(-1);
+    }
 
-  if (event.key === 'ArrowLeft') {
-    showAdjacentEmergingTech(-1);
+    if (event.key === 'ArrowRight') {
+      showAdjacentEmergingTech(1);
+    }
   }
 
-  if (event.key === 'ArrowRight') {
-    showAdjacentEmergingTech(1);
+  const memoryModal = document.getElementById('memory-modal');
+  if (memoryModal?.classList.contains('open')) {
+    if (event.key === 'ArrowLeft') {
+      showAdjacentMemory(-1);
+    }
+
+    if (event.key === 'ArrowRight') {
+      showAdjacentMemory(1);
+    }
+  }
+
+  const galleryModal = document.getElementById('gallery-modal');
+  if (galleryModal?.classList.contains('open')) {
+    if (event.key === 'ArrowLeft') {
+      showAdjacentGallery(-1);
+    }
+
+    if (event.key === 'ArrowRight') {
+      showAdjacentGallery(1);
+    }
   }
 });
 
@@ -472,6 +905,7 @@ function renderInfoPage(pageId) {
   NAV_TABS.forEach(tab => tab.active = (tab.id === pageId));
   const theatreClass = pageId === 'gallery' ? ' gallery-theatre-page' : '';
   const emergingClass = pageId === 'emerging' ? ' emerging-tech-page' : '';
+  const memoriesClass = pageId === 'memories' ? ' memories-page' : '';
   const theatreCurtains = pageId === 'gallery'
     ? `
       <div class="gallery-curtain-stage" aria-hidden="true">
@@ -482,7 +916,7 @@ function renderInfoPage(pageId) {
     : '';
 
   return `
-    <div class="page info-page${theatreClass}${emergingClass} active">
+    <div class="page info-page${theatreClass}${emergingClass}${memoriesClass} active">
       <nav class="navbar">
         ${renderUserMenu()}
         <ul class="navbar-links" id="home-nav-tabs">
@@ -496,6 +930,14 @@ function renderInfoPage(pageId) {
       <main class="info-page-main">
         ${pageId === 'emerging'
           ? renderEmergingTechPage(page)
+          : pageId === 'memories'
+          ? renderMemoriesPage(page)
+          : pageId === 'gallery'
+          ? renderGalleryPage(page)
+          : pageId === 'about'
+          ? renderAboutPage(page)
+          : pageId === 'mygroup'
+          ? renderMyGroupPage(page)
           : `
             <section class="info-page-hero ${page.heroImage ? 'hero-image' : ''}" ${page.heroImage ? `style="background-image: url('${page.heroImage}')"` : ''}>
               <div class="hero-overlay" aria-hidden="true"></div>
@@ -524,3 +966,13 @@ window.closeEmergingTechModal = closeEmergingTechModal;
 window.handleEmergingModalBackdrop = handleEmergingModalBackdrop;
 window.handleEmergingCardKey = handleEmergingCardKey;
 window.showAdjacentEmergingTech = showAdjacentEmergingTech;
+window.showMemoryModal = showMemoryModal;
+window.closeMemoryModal = closeMemoryModal;
+window.handleMemoryModalBackdrop = handleMemoryModalBackdrop;
+window.handleMemoryCardKey = handleMemoryCardKey;
+window.showAdjacentMemory = showAdjacentMemory;
+window.showGalleryModal = showGalleryModal;
+window.closeGalleryModal = closeGalleryModal;
+window.handleGalleryModalBackdrop = handleGalleryModalBackdrop;
+window.handleGalleryCardKey = handleGalleryCardKey;
+window.showAdjacentGallery = showAdjacentGallery;
